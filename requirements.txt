@@ -1,0 +1,62 @@
+# Audio processing libraries
+librosa==0.10.1
+soundfile==0.12.1
+noisereduce==3.0.0
+
+# Data handling and processing
+pandas==2.1.4
+numpy==1.24.3
+
+# HTTP requests and downloading
+requests==2.31.0
+tqdm==4.66.1
+
+# Audio dataset utilities
+tensorflow-datasets==4.9.3  # For AudioSet access
+datasets==2.16.1  # Hugging Face datasets for Common Voice
+
+# Additional audio processing
+scipy==1.11.4
+scikit-learn==1.3.2
+
+# Utilities
+pathlib2==2.3.7
+
+# FastAPI Backend
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+httpx==0.26.0
+python-dotenv==1.0.0
+pydantic==2.5.3
+
+# PyTorch for acoustic model
+torch==2.1.2
+torchvision==0.16.2
+
+# Transformers for keyword model
+transformers==4.36.2
+
+# Whisper for transcription
+openai-whisper==20231117
+
+# Audio recording for detector
+pyaudio==0.2.13
+
+# Additional ML utilities
+torchmetrics==1.2.1
+
+# Text-to-Speech for synthetic audio generation
+gtts==2.5.1
+
+# Class imbalance handling
+imbalanced-learn==0.11.0
+
+# Audio recording and transcription
+sounddevice==0.4.6
+faster-whisper==0.10.0
+
+# Location services
+geocoder==1.38.1
+
+# Twilio for SMS alerts
+twilio==8.11.0

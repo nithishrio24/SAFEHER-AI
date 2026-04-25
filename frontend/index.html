@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SafeHer AI — Voice Monitor</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg-primary: #050508;
+  --bg-secondary: #0D0D1A;
+  --bg-card: #111127;
+  --bg-card-hover: #161630;
+  --border: rgba(139, 92, 246, 0.15);
+  --border-bright: rgba(139, 92, 246, 0.4);
+  --purple: #8B5CF6;
+  --purple-light: #A78BFA;
+  --pink: #EC4899;
+  --cyan: #06B6D4;
+  --green: #10B981;
+  --red: #EF4444;
+  --amber: #F59E0B;
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted: #475569;
+  --glow-purple: 0 0 30px rgba(139, 92, 246, 0.3);
+  --glow-red: 0 0 30px rgba(239, 68, 68, 0.4);
+  --glow-green: 0 0 30px rgba(16, 185, 129, 0.3);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 0 20px rgba(239,68,68,0.4); }
+  50% { box-shadow: 0 0 60px rgba(239,68,68,0.8); }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+@keyframes ripple {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(1.2); opacity: 0; }
+}
+
+@keyframes pulse-text {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* NAVBAR */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  background: rgba(5, 5, 8, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navbar-logo {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--purple), var(--pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 1px;
+}
+
+.navbar-logo .ai {
+  color: var(--cyan);
+  -webkit-text-fill-color: var(--cyan);
+}
+
+.navbar-center {
+  display: flex;
+  gap: 12px;
+}
+
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-dot.green { background: var(--green); box-shadow: 0 0 10px var(--green); }
+.status-dot.red { background: var(--red); box-shadow: 0 0 10px var(--red); }
+.status-dot.purple { background: var(--purple); box-shadow: 0 0 10px var(--purple); }
+.status-dot.cyan { background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+
+.navbar-right {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* MAIN CONTAINER */
+.main-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+/* HERO SECTION */
+.hero-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.shield-container {
+  position: relative;
+  margin-bottom: 40px;
+  animation: float 3s ease-in-out infinite;
+}
+
+.ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  animation: ripple 3s ease-out infinite;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.ring-1 { width: 120px; height: 120px; animation-delay: 0s; }
+.ring-2 { width: 180px; height: 180px; animation-delay: 0.5s; }
+.ring-3 { width: 240px; height: 240px; animation-delay: 1s; }
+
+.shield-icon {
+  font-size: 100px;
+  filter: drop-shadow(0 0 30px rgba(139, 92, 246, 0.5));
+  transition: all 0.3s;
+}
+
+.shield-container.distress .shield-icon {
+  animation: shake 0.5s ease-in-out infinite;
+}
+
+.shield-container.distress .ring {
+  border-color: rgba(239, 68, 68, 0.5);
+  animation-duration: 1s;
+}
+
+.hero-status {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--purple), var(--pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+.hero-substatus {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+  animation: pulse-text 1.5s infinite;
+}
+
+.hero-substatus.distress {
+  color: var(--red);
+  font-weight: 600;
+}
+
+/* CONTROL BUTTONS */
+.control-buttons {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.btn-primary {
+  padding: 16px 40px;
+  border-radius: 50px;
+  background: linear-gradient(135deg, var(--purple), var(--pink));
+  border: none;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  box-shadow: var(--glow-purple);
+  transition: all 0.3s ease;
+  letter-spacing: 1px;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 50px rgba(139, 92, 246, 0.6);
+}
+
+.btn-secondary {
+  padding: 16px 40px;
+  border-radius: 50px;
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: var(--red);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 1px;
+}
+
+.btn-secondary:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* AUDIO VISUALIZER */
+.visualizer-container {
+  margin: 20px auto;
+  max-width: 600px;
+}
+
+#visualizer {
+  width: 100%;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  display: block;
+}
+
+/* TRANSCRIPT PANEL */
+.transcript-panel {
+  background: rgba(17, 17, 39, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  margin: 20px 0;
+}
+
+.transcript-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.transcript-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--cyan);
+  letter-spacing: 2px;
+}
+
+.lang-select {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.interim-text {
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.final-text {
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.word-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.word-chip {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+}
+
+.word-chip.distress {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: var(--red);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+.word-chip.normal {
+  background: rgba(71, 85, 105, 0.3);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  color: var(--text-secondary);
+}
+
+/* CONFIDENCE METER */
+.confidence-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 40px 0;
+}
+
+.confidence-svg {
+  margin-bottom: 16px;
+}
+
+.confidence-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.confidence-label.safe { color: var(--green); }
+.confidence-label.warning { color: var(--amber); }
+.confidence-label.danger { color: var(--red); animation: pulse-text 0.8s infinite; }
+
+/* STATS ROW */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin: 40px 0;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.stat-card:hover {
+  border-color: var(--border-bright);
+  box-shadow: var(--glow-purple);
+}
+
+.stat-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.stat-value.purple { color: var(--purple); }
+.stat-value.cyan { color: var(--cyan); }
+.stat-value.green { color: var(--green); }
+
+.stat-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ALERT OVERLAY */
+.alert-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(5, 5, 8, 0.97);
+  backdrop-filter: blur(30px);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.alert-overlay.show {
+  display: flex;
+}
+
+.alert-icon {
+  font-size: 80px;
+  margin-bottom: 24px;
+  animation: pulse-red 1s infinite;
+}
+
+.alert-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--red);
+  margin-bottom: 16px;
+  letter-spacing: 2px;
+}
+
+.alert-phrase {
+  font-family: 'Inter', sans-serif;
+  font-size: 24px;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  font-style: italic;
+}
+
+.alert-confidence {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--red);
+  margin-bottom: 24px;
+}
+
+.alert-status {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+}
+
+.countdown-circle {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 32px;
+}
+
+.countdown-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.btn-cancel-alert {
+  padding: 16px 48px;
+  border-radius: 50px;
+  background: transparent;
+  border: 2px solid white;
+  color: white;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  letter-spacing: 1px;
+}
+
+.btn-cancel-alert:hover {
+  background: white;
+  color: var(--bg-primary);
+}
+
+/* ALERT HISTORY */
+.alert-history {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  margin: 40px 0;
+}
+
+.section-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+
+.alert-timeline {
+  position: relative;
+  padding-left: 20px;
+}
+
+.alert-timeline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border);
+}
+
+.alert-entry {
+  position: relative;
+  padding-left: 24px;
+  padding-bottom: 24px;
+}
+
+.alert-entry::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 10px var(--red);
+}
+
+.alert-entry.safe::before {
+  background: var(--green);
+  box-shadow: 0 0 10px var(--green);
+}
+
+.alert-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.alert-phrase-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.alert-conf-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--cyan);
+}
+
+/* EMERGENCY CONTACTS */
+.contacts-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  margin: 40px 0;
+}
+
+.contact-form {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.contact-input {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+}
+
+.contact-input:focus {
+  outline: none;
+  border-color: var(--purple);
+}
+
+.btn-add-contact {
+  padding: 12px 24px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--purple), var(--pink));
+  border: none;
+  color: white;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-add-contact:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--glow-purple);
+}
+
+.contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contact-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  transition: all 0.3s;
+}
+
+.contact-card:hover {
+  border-color: var(--border-bright);
+}
+
+.contact-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple), var(--pink));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+}
+
+.contact-info {
+  flex: 1;
+}
+
+.contact-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.contact-detail {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.contact-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 10px var(--green);
+}
+
+.btn-delete-contact {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-delete-contact:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* FOOTER */
+.footer {
+  text-align: center;
+  padding: 40px 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.footer-text {
+  background: linear-gradient(135deg, var(--purple), var(--pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 12px 16px;
+  }
+  
+  .navbar-center {
+    display: none;
+  }
+  
+  .hero-status {
+    font-size: 18px;
+  }
+  
+  .shield-icon {
+    font-size: 80px;
+  }
+  
+  .control-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+  
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .contact-form {
+    flex-direction: column;
+  }
+  
+  .btn-add-contact {
+    width: 100%;
+  }
+}
+
+/* SCREEN STATES */
+.screen {
+  display: none;
+}
+
+.screen.active {
+  display: block;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* AI REASONING BOX */
+.ai-box {
+  display: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.ai-box.show {
+  display: block;
+}
+
+.ai-header {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+.ai-reason {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.ai-meta {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.ai-box.danger {
+  border-color: var(--red);
+}
+
+.ai-box.danger .ai-reason {
+  color: var(--red);
+}
+
+
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <span class="navbar-logo">SAFEHER <span class="ai">AI</span></span>
+  </div>
+  <div class="navbar-center">
+    <div class="status-pill">
+      <div class="status-dot green" id="backendDot"></div>
+      <span id="backendStatus">ONLINE</span>
+    </div>
+    <div class="status-pill">
+      <div class="status-dot purple"></div>
+      <span>RTX 3050</span>
+    </div>
+    <div class="status-pill">
+      <div class="status-dot cyan"></div>
+      <span>ACTIVE</span>
+    </div>
+  </div>
+  <div class="navbar-right" id="currentTime">00:00:00</div>
+</nav>
+
+<!-- MAIN CONTAINER -->
+<div class="main-container">
+
+  <!-- IDLE SCREEN -->
+  <div class="screen active" id="idleScreen">
+    <div class="hero-section">
+      <div class="shield-container" id="shieldContainer">
+        <div class="ring ring-1"></div>
+        <div class="ring ring-2"></div>
+        <div class="ring ring-3"></div>
+        <div class="shield-icon">🛡️</div>
+      </div>
+      <div class="hero-status">Her Safety. Our Mission.</div>
+      <div class="hero-substatus" id="idleSubstatus">Protection Off</div>
+      <div class="control-buttons">
+        <button class="btn-primary" onclick="startMonitoring()">▶ START MONITORING</button>
+      </div>
+    </div>
+
+    <!-- STATS ROW -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value purple" id="alertsToday">0</div>
+        <div class="stat-label">Alerts Today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value cyan" id="lastDetection">Never</div>
+        <div class="stat-label">Last Detection</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value green">95.2%</div>
+        <div class="stat-label">Detection Accuracy</div>
+      </div>
+    </div>
+
+    <!-- ALERT HISTORY -->
+    <div class="alert-history">
+      <div class="section-title">ALERT HISTORY</div>
+      <div class="alert-timeline" id="alertTimeline">
+        <div class="alert-entry safe">
+          <div class="alert-time">Just now</div>
+          <div class="alert-phrase-text">"good morning"</div>
+          <div class="alert-conf-text">5% confidence</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMERGENCY CONTACTS -->
+    <div class="contacts-section">
+      <div class="section-title">EMERGENCY CONTACTS</div>
+      <div class="contact-form">
+        <input type="text" class="contact-input" placeholder="Name" id="contactName">
+        <input type="text" class="contact-input" placeholder="Phone or Email" id="contactPhone">
+        <button class="btn-add-contact" onclick="addContact()">ADD</button>
+      </div>
+      <div class="contact-list" id="contactList">
+        <div class="contact-card">
+          <div class="contact-avatar">N</div>
+          <div class="contact-info">
+            <div class="contact-name">Nithish</div>
+            <div class="contact-detail">9994593533</div>
+          </div>
+          <div class="contact-status"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LISTENING SCREEN -->
+  <div class="screen" id="listeningScreen">
+    <div class="hero-section">
+      <div class="shield-container">
+        <div class="ring ring-1"></div>
+        <div class="ring ring-2"></div>
+        <div class="ring ring-3"></div>
+        <div class="shield-icon">🎤</div>
+      </div>
+      <div class="hero-status">Listening for your voice...</div>
+      <div class="hero-substatus">Speak now</div>
+      <div class="control-buttons">
+        <button class="btn-secondary" onclick="stopMonitoring()">■ STOP MONITORING</button>
+      </div>
+    </div>
+
+    <!-- AUDIO VISUALIZER -->
+    <div class="visualizer-container">
+      <canvas id="visualizer" width="600" height="80"></canvas>
+    </div>
+
+    <!-- TRANSCRIPT PANEL -->
+    <div class="transcript-panel">
+      <div class="transcript-header">
+        <div class="transcript-label">LIVE TRANSCRIPT</div>
+        <select class="lang-select" id="langSelect" onchange="changeLanguage()">
+          <option value="en-IN">🇬🇧 English (India)</option>
+          <option value="hi-IN">🇮🇳 Hindi</option>
+          <option value="ta-IN">🇮🇳 Tamil</option>
+          <option value="te-IN">🇮🇳 Telugu</option>
+          <option value="en-US">🇺🇸 English (US)</option>
+        </select>
+      </div>
+      <div class="interim-text" id="interim-transcript">Waiting for speech...</div>
+      <div class="final-text" id="final-transcript"></div>
+      <div class="word-chips" id="wordChips"></div>
+    </div>
+  </div>
+
+  <!-- ANALYSIS SCREEN -->
+  <div class="screen" id="analysisScreen">
+    <div class="hero-section">
+      <div class="shield-container" id="analysisShield">
+        <div class="ring ring-1"></div>
+        <div class="ring ring-2"></div>
+        <div class="ring ring-3"></div>
+        <div class="shield-icon">🛡️</div>
+      </div>
+      <div class="hero-status" id="analysisStatus">ANALYZING...</div>
+      <div class="hero-substatus" id="analysisSubstatus"></div>
+    </div>
+
+    <!-- CONFIDENCE METER -->
+    <div class="confidence-section">
+      <svg class="confidence-svg" viewBox="0 0 120 120" width="160" height="160">
+        <circle cx="60" cy="60" r="50" fill="none" stroke="#1a1a2e" stroke-width="8"/>
+        <circle id="confidence-ring" cx="60" cy="60" r="50" fill="none" stroke="url(#confidenceGradient)" stroke-width="8" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314" transform="rotate(-90 60 60)"/>
+        <defs>
+          <linearGradient id="confidenceGradient">
+            <stop offset="0%" stop-color="#8B5CF6"/>
+            <stop offset="100%" stop-color="#EC4899"/>
+          </linearGradient>
+        </defs>
+        <text id="confidence-number" x="60" y="55" text-anchor="middle" font-family="JetBrains Mono" font-size="20" font-weight="bold" fill="#F1F5F9">0%</text>
+        <text x="60" y="72" text-anchor="middle" font-family="Inter" font-size="9" fill="#94A3B8">CONFIDENCE</text>
+      </svg>
+      <div class="confidence-label" id="confidenceLabel">✅ Safe — No distress detected</div>
+    </div>
+
+    <!-- AI REASONING BOX -->
+    <div class="ai-box" id="ai-box">
+      <div class="ai-header">GEMINI AI ANALYSIS</div>
+      <div class="ai-reason" id="ai-reason"></div>
+      <div class="ai-meta" id="ai-language"></div>
+      <div class="ai-meta" id="ai-distress-type"></div>
+    </div>
+
+    <!-- TRANSCRIPT PANEL -->
+    <div class="transcript-panel">
+      <div class="transcript-header">
+        <div class="transcript-label">DETECTED PHRASE</div>
+      </div>
+      <div class="final-text" id="analysisTranscript"></div>
+      <div class="word-chips" id="analysisWordChips"></div>
+    </div>
+
+    <div class="control-buttons">
+      <button class="btn-primary" onclick="restartMonitoring()">▶ START MONITORING AGAIN</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ALERT OVERLAY -->
+<div class="alert-overlay" id="alertOverlay">
+  <div class="alert-icon">⚠️</div>
+  <div class="alert-title">EMERGENCY ALERT TRIGGERED</div>
+  <div class="alert-phrase" id="overlayTranscript">"help me please"</div>
+  <div class="alert-confidence" id="overlayConf">92%</div>
+  <div class="alert-status" id="alertStatus">📧 Sending to contacts...</div>
+  
+  <svg class="countdown-circle" viewBox="0 0 120 120">
+    <circle cx="60" cy="60" r="50" fill="none" stroke="#333" stroke-width="8"/>
+    <circle id="countdownRing" cx="60" cy="60" r="50" fill="none" stroke="#EF4444" stroke-width="8" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+    <text x="60" y="65" text-anchor="middle" class="countdown-number" id="countdownNumber">3</text>
+  </svg>
+  
+  <button class="btn-cancel-alert" onclick="cancelAlert()">CANCEL ALERT</button>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-text">SafeHer AI © 2026 — Protecting Women Everywhere</div>
+</footer>
+
+<script>
+const API = 'http://localhost:8001';
+const USER_ID = 'safeher_user_001';
+
+// State
+let currentState = 'idle';
+let audioContext = null;
+let analyser = null;
+let microphone = null;
+let dataArray = null;
+let animationId = null;
+let recognition = null;
+let selectedLanguage = 'en-IN';
+let currentAudioEnergy = 0.5;
+let alertActive = false;
+let cancelTimer = null;
+let alertsToday = 0;
+
+// Update time
+function updateTime() {
+  const now = new Date();
+  document.getElementById('currentTime').textContent = now.toLocaleTimeString();
+}
+setInterval(updateTime, 1000);
+updateTime();
+
+// Health check
+async function checkHealth() {
+  try {
+    const r = await fetch(`${API}/health`, {signal: AbortSignal.timeout(3000)});
+    const d = await r.json();
+    document.getElementById('backendDot').className = 'status-dot green';
+    document.getElementById('backendStatus').textContent = 'ONLINE';
+  } catch {
+    document.getElementById('backendDot').className = 'status-dot red';
+    document.getElementById('backendStatus').textContent = 'OFFLINE';
+  }
+}
+checkHealth();
+setInterval(checkHealth, 5000);
+
+// Distress words
+const DISTRESS_WORDS_LIST = [
+  "help", "help me", "bachao", "madad",
+  "leave me alone", "dont touch me", "don't touch me",
+  "call police", "save me", "stop it",
+  "please stop", "let me go", "get away",
+  "udavi", "kaapadu", "sahayam", "chodo",
+  "someone help", "somebody help", "please help"
+];
+
+function highlightWords(transcript, containerId) {
+  const words = transcript.toLowerCase().split(' ');
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  
+  words.forEach(word => {
+    const chip = document.createElement('span');
+    chip.className = 'word-chip';
+    chip.textContent = word;
+    
+    const isDistress = DISTRESS_WORDS_LIST.some(
+      dw => dw.includes(word) || word.includes(dw)
+    );
+    
+    if (isDistress) {
+      chip.classList.add('distress');
+    } else {
+      chip.classList.add('normal');
+    }
+    
+    container.appendChild(chip);
+  });
+}
+
+// Start monitoring
+async function startMonitoring() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    microphone = audioContext.createMediaStreamSource(stream);
+    microphone.connect(analyser);
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+    
+    visualize();
+    setupSpeechRecognition();
+    
+    currentState = 'listening';
+    document.getElementById('idleScreen').classList.remove('active');
+    document.getElementById('listeningScreen').classList.add('active');
+    document.getElementById('analysisScreen').classList.remove('active');
+    
+  } catch (err) {
+    console.error('Error:', err);
+    alert('Microphone access required');
+  }
+}
+
+// Visualizer
+function visualize() {
+  if (!analyser) return;
+  
+  animationId = requestAnimationFrame(visualize);
+  analyser.getByteFrequencyData(dataArray);
+  
+  const canvas = document.getElementById('visualizer');
+  const ctx = canvas.getContext('2d');
+  const width = canvas.width;
+  const height = canvas.height;
+  
+  ctx.clearRect(0, 0, width, height);
+  
+  const barCount = 80;
+  const barWidth = (width - (barCount - 1) * 2) / barCount;
+  
+  let sum = 0;
+  for (let i = 0; i < barCount; i++) {
+    const value = dataArray[i];
+    sum += value;
+    const barHeight = Math.max(5, (value / 255) * height);
+    
+    const x = i * (barWidth + 2);
+    const y = height - barHeight;
+    
+    const gradient = ctx.createLinearGradient(x, y, x, height);
+    if (currentState === 'listening') {
+      gradient.addColorStop(0, '#8B5CF6');
+      gradient.addColorStop(1, '#06B6D4');
+    } else {
+      gradient.addColorStop(0, '#EF4444');
+      gradient.addColorStop(1, '#F59E0B');
+    }
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(x, y, barWidth, barHeight);
+  }
+  
+  currentAudioEnergy = sum / (barCount * 255);
+}
+
+// Speech recognition
+function setupSpeechRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert('Speech recognition not supported');
+    return;
+  }
+  
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = selectedLanguage;
+  
+  recognition.onresult = (event) => {
+    let interim = '';
+    let final = '';
+    
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const transcript = event.results[i][0].transcript;
+      if (event.results[i].isFinal) {
+        final += transcript + ' ';
+        analyzeTranscript(transcript);
+      } else {
+        interim += transcript;
+      }
+    }
+    
+    document.getElementById('interim-transcript').textContent = interim || 'Waiting for speech...';
+    if (final) {
+      document.getElementById('final-transcript').textContent = final;
+      document.getElementById('interim-transcript').textContent = '';
+    }
+  };
+  
+  recognition.onerror = (event) => {
+    console.error('Error:', event.error);
+    if (event.error !== 'not-allowed' && event.error !== 'no-speech') {
+      setTimeout(() => {
+        if (currentState === 'listening' && recognition) recognition.start();
+      }, 1000);
+    }
+  };
+  
+  recognition.onend = () => {
+    if (currentState === 'listening') {
+      setTimeout(() => {
+        if (recognition) recognition.start();
+      }, 100);
+    }
+  };
+  
+  recognition.start();
+}
+
+// Analyze transcript
+async function analyzeTranscript(transcript) {
+  if (!transcript || transcript.trim() === '') return;
+  
+  const energy = currentAudioEnergy || 0.6;
+  
+  try {
+    const response = await fetch(`${API}/detect`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: USER_ID,
+        transcript: transcript,
+        audio_energy: energy,
+        language: selectedLanguage
+      })
+    });
+    
+    const data = await response.json();
+    const conf = data.confidence || 0;
+    const percent = Math.round(conf * 100);
+    
+    displayAnalysis(data, transcript, percent);
+    
+  } catch (err) {
+    console.error('Error:', err);
+  }
+}
+
+// Display analysis
+function displayAnalysis(data, transcript, percent) {
+  currentState = 'analysis';
+  document.getElementById('listeningScreen').classList.remove('active');
+  document.getElementById('analysisScreen').classList.add('active');
+  
+  // Update confidence ring
+  const offset = 314 - (314 * data.confidence);
+  document.getElementById('confidence-ring').setAttribute('stroke-dashoffset', offset);
+  document.getElementById('confidence-number').textContent = percent + '%';
+  
+  // Update label
+  const label = document.getElementById('confidenceLabel');
+  label.className = 'confidence-label';
+  if (percent < 40) {
+    label.textContent = '✅ Safe — No distress detected';
+    label.classList.add('safe');
+  } else if (percent < 60) {
+    label.textContent = '👂 Monitoring...';
+    label.classList.add('safe');
+  } else if (percent < 75) {
+    label.textContent = '⚠️ Possible distress';
+    label.classList.add('warning');
+  } else if (percent < 85) {
+    label.textContent = '🚨 Distress words detected!';
+    label.classList.add('warning');
+  } else {
+    label.textContent = '🆘 EMERGENCY — Alerting now!';
+    label.classList.add('danger');
+  }
+  
+  // Update status
+  document.getElementById('analysisStatus').textContent = data.status || 'ANALYZING';
+  document.getElementById('analysisSubstatus').textContent = data.reason || '';
+  
+  // Update transcript
+  document.getElementById('analysisTranscript').textContent = transcript;
+  highlightWords(transcript, 'analysisWordChips');
+  
+  // AI reasoning
+  const aiBox = document.getElementById('ai-box');
+  if (data.reason) {
+    aiBox.classList.add('show');
+    aiBox.classList.remove('danger');
+    document.getElementById('ai-reason').textContent = '🤖 ' + data.reason;
+    document.getElementById('ai-language').textContent = data.language_detected ? '🌐 ' + data.language_detected : '';
+    document.getElementById('ai-distress-type').textContent = data.distress_type ? '⚠️ ' + data.distress_type : '';
+    
+    if (data.status === 'DISTRESS') {
+      aiBox.classList.add('danger');
+      document.getElementById('analysisShield').classList.add('distress');
+    }
+  }
+  
+  // Trigger alert
+  if (percent >= 80) {
+    triggerAlert(transcript, percent);
+  }
+  
+  // Add to history
+  addToHistory(transcript, percent, data.status);
+}
+
+// Trigger alert
+async function triggerAlert(transcript, conf) {
+  alertActive = true;
+  
+  document.getElementById('overlayTranscript').textContent = '"' + transcript + '"';
+  document.getElementById('overlayConf').textContent = conf + '%';
+  document.getElementById('alertOverlay').classList.add('show');
+  
+  // Countdown
+  let count = 3;
+  const ring = document.getElementById('countdownRing');
+  const number = document.getElementById('countdownNumber');
+  
+  const countdown = setInterval(() => {
+    count--;
+    number.textContent = count;
+    const offset = (3 - count) * (314 / 3);
+    ring.setAttribute('stroke-dashoffset', offset);
+    
+    if (count <= 0) {
+      clearInterval(countdown);
+      sendAlert(transcript, conf);
+    }
+  }, 1000);
+  
+  cancelTimer = countdown;
+}
+
+// Send alert
+async function sendAlert(transcript, conf) {
+  if (!alertActive) return;
+  
+  try {
+    await fetch('/alert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: USER_ID,
+        transcript: transcript,
+        confidence: conf / 100,
+        latitude: null,
+        longitude: null,
+        timestamp: new Date().toISOString()
+      })
+    });
+    
+    document.getElementById('alertStatus').textContent = '✅ Emergency alert sent!';
+    alertsToday++;
+    document.getElementById('alertsToday').textContent = alertsToday;
+    
+    // Try GPS in background
+    navigator.geolocation.getCurrentPosition(pos => {
+      fetch('/alert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: USER_ID,
+          transcript: transcript,
+          confidence: conf / 100,
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          timestamp: new Date().toISOString()
+        })
+      });
+    }, () => {}, { timeout: 5000 });
+    
+  } catch (err) {
+    console.error('Error:', err);
+  }
+}
+
+// Cancel alert
+function cancelAlert() {
+  alertActive = false;
+  if (cancelTimer) clearInterval(cancelTimer);
+  document.getElementById('alertOverlay').classList.remove('show');
+  document.getElementById('countdownRing').setAttribute('stroke-dashoffset', '0');
+  document.getElementById('countdownNumber').textContent = '3';
+  document.getElementById('alertStatus').textContent = '📧 Sending to contacts...';
+}
+
+// Stop monitoring
+function stopMonitoring() {
+  currentState = 'idle';
+  
+  if (audioContext) {
+    audioContext.close();
+    audioContext = null;
+  }
+  if (animationId) {
+    cancelAnimationFrame(animationId);
+    animationId = null;
+  }
+  if (recognition) {
+    recognition.stop();
+    recognition = null;
+  }
+  
+  document.getElementById('listeningScreen').classList.remove('active');
+  document.getElementById('analysisScreen').classList.remove('active');
+  document.getElementById('idleScreen').classList.add('active');
+  document.getElementById('analysisShield').classList.remove('distress');
+}
+
+// Restart monitoring
+function restartMonitoring() {
+  document.getElementById('analysisShield').classList.remove('distress');
+  document.getElementById('ai-box').classList.remove('show');
+  document.getElementById('confidence-ring').setAttribute('stroke-dashoffset', '314');
+  document.getElementById('confidence-number').textContent = '0%';
+  document.getElementById('analysisTranscript').textContent = '';
+  document.getElementById('analysisWordChips').innerHTML = '';
+  
+  startMonitoring();
+}
+
+// Change language
+function changeLanguage() {
+  selectedLanguage = document.getElementById('langSelect').value;
+  if (currentState === 'listening' && recognition) {
+    recognition.stop();
+    setTimeout(() => {
+      setupSpeechRecognition();
+    }, 100);
+  }
+}
+
+// Add to history
+function addToHistory(transcript, conf, status) {
+  const timeline = document.getElementById('alertTimeline');
+  const entry = document.createElement('div');
+  entry.className = 'alert-entry' + (status === 'SAFE' ? ' safe' : '');
+  entry.innerHTML = `
+    <div class="alert-time">Just now</div>
+    <div class="alert-phrase-text">"${transcript}"</div>
+    <div class="alert-conf-text">${conf}% confidence</div>
+  `;
+  timeline.insertBefore(entry, timeline.firstChild);
+  
+  document.getElementById('lastDetection').textContent = 'Just now';
+}
+
+// Add contact
+function addContact() {
+  const name = document.getElementById('contactName').value;
+  const phone = document.getElementById('contactPhone').value;
+  
+  if (!name || !phone) return;
+  
+  const list = document.getElementById('contactList');
+  const card = document.createElement('div');
+  card.className = 'contact-card';
+  card.innerHTML = `
+    <div class="contact-avatar">${name[0].toUpperCase()}</div>
+    <div class="contact-info">
+      <div class="contact-name">${name}</div>
+      <div class="contact-detail">${phone}</div>
+    </div>
+    <div class="contact-status"></div>
+    <button class="btn-delete-contact" onclick="this.parentElement.remove()">DELETE</button>
+  `;
+  list.appendChild(card);
+  
+  document.getElementById('contactName').value = '';
+  document.getElementById('contactPhone').value = '';
+}
+</script>
+</body>
+</html>
