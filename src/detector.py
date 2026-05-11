@@ -43,12 +43,44 @@ def detect(audio_data):
     """
     # Step 1: Convert voice to text
     r = sr.Recognizer()
+    
+    # Try Google Speech Recognition first
     try:
         transcript = r.recognize_google(audio_data)
         transcript = transcript.lower()
-        logger.info(f"Transcript: {transcript}")
+        logger.info(f"Transcript (Google): {transcript}")
+    except sr.UnknownValueError:
+        logger.warning("Google Speech could not understand audio, trying Sphinx...")
+        # Fallback to offline Sphinx
+        try:
+            transcript = r.recognize_sphinx(audio_data)
+            transcript = transcript.lower()
+            logger.info(f"Transcript (Sphinx): {transcript}")
+        except Exception as e:
+            logger.error(f"Sphinx also failed: {type(e).__name__}: {e}")
+            return {
+                "triggered": False,
+                "confidence": 0.0,
+                "transcript": "",
+                "status": "Could not understand audio"
+            }
+    except sr.RequestError as e:
+        logger.error(f"Speech recognition service unavailable: {e}, trying Sphinx...")
+        # Fallback to offline Sphinx
+        try:
+            transcript = r.recognize_sphinx(audio_data)
+            transcript = transcript.lower()
+            logger.info(f"Transcript (Sphinx): {transcript}")
+        except Exception as e2:
+            logger.error(f"Sphinx also failed: {type(e2).__name__}: {e2}")
+            return {
+                "triggered": False,
+                "confidence": 0.0,
+                "transcript": "",
+                "status": "Service unavailable"
+            }
     except Exception as e:
-        logger.error(f"Speech recognition error: {e}")
+        logger.error(f"Speech recognition error: {type(e).__name__}: {e}")
         return {
             "triggered": False,
             "confidence": 0.0,
